@@ -1,7 +1,11 @@
+import 'package:covid_tracker_app/View/countries_list.dart';
+import 'package:covid_tracker_app/model/world_states_model.dart';
+import 'package:covid_tracker_app/services/states_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:pie_chart/pie_chart.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 class WorldStates extends StatefulWidget {
   const WorldStates({super.key});
@@ -30,40 +34,101 @@ class _WorldStatesState extends State<WorldStates>
 
   @override
   Widget build(BuildContext context) {
+    StatesServices statesServices = StatesServices();
     return Scaffold(
       body: SafeArea(
           child: Padding(
-        padding: const EdgeInsets.all(15.0),
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           children: [
             SizedBox(height: MediaQuery.of(context).size.height * 0.1),
-            PieChart(
-              dataMap: {'Total': 20, 'Recovered': 15, 'Death': 5},
-              animationDuration: Duration(milliseconds: 1200),
-              chartType: ChartType.ring,
-              colorList: colorList,
-              legendOptions: LegendOptions(legendPosition: LegendPosition.left),
-            ),
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.08,
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Card(
-                child: Column(children: [
-                  ReusableRow(title: 'Total', value: '400'),
-                  ReusableRow(title: 'Total', value: '400'),
-                  ReusableRow(title: 'Total', value: '400'),
-                ]),
-              ),
-            ),
-            Container(
-              height: 50,
-              decoration: BoxDecoration(
-                  color: Color(0xff1aa260),
-                  borderRadius: BorderRadius.circular(20)),
-              child: Center(child: Text('Track Countries')),
-            )
+            FutureBuilder(
+                future: statesServices.fetchWorldStatesRecords(),
+                builder: (context, AsyncSnapshot<WorldStatesModel> snapshot) {
+                  if (!snapshot.hasData) {
+                    return Expanded(
+                      flex: 1,
+                      child: SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 50,
+                        controller: _controller,
+                      ),
+                    );
+                  } else {
+                    return Scrollbar(
+                      child: Column(
+                        children: [
+                          PieChart(
+                            dataMap: {
+                              'Total':
+                                  double.parse(snapshot.data!.cases.toString()),
+                              'Recovered': double.parse(
+                                  snapshot.data!.recovered.toString()),
+                              'Death': double.parse(
+                                  snapshot.data!.deaths.toString()),
+                            },
+                            chartValuesOptions: ChartValuesOptions(
+                                showChartValuesInPercentage: true),
+                            animationDuration: Duration(milliseconds: 1200),
+                            chartType: ChartType.ring,
+                            colorList: colorList,
+                            legendOptions: LegendOptions(
+                                legendPosition: LegendPosition.left),
+                          ),
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.08,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(
+                              child: Column(children: [
+                                ReusableRow(
+                                    title: 'Total',
+                                    value: snapshot.data!.cases.toString()),
+                                ReusableRow(
+                                    title: 'Deaths',
+                                    value: snapshot.data!.deaths.toString()),
+                                ReusableRow(
+                                    title: 'Recovered',
+                                    value: snapshot.data!.recovered.toString()),
+                                ReusableRow(
+                                    title: 'Active',
+                                    value: snapshot.data!.active.toString()),
+                                ReusableRow(
+                                    title: 'Critical',
+                                    value: snapshot.data!.critical.toString()),
+                                ReusableRow(
+                                    title: 'Today Deaths',
+                                    value:
+                                        snapshot.data!.todayDeaths.toString()),
+                                ReusableRow(
+                                    title: 'Today Recovered',
+                                    value: snapshot.data!.todayRecovered
+                                        .toString()),
+                              ]),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          CountriesListScreen()));
+                            },
+                            child: Container(
+                              height: 50,
+                              decoration: BoxDecoration(
+                                  color: Color(0xff1aa260),
+                                  borderRadius: BorderRadius.circular(20)),
+                              child: Center(child: Text('Track Countries')),
+                            ),
+                          )
+                        ],
+                      ),
+                    );
+                  }
+                }),
           ],
         ),
       )),
