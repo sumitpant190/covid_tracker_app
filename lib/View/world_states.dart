@@ -101,10 +101,10 @@ class _WorldStatesState extends State<WorldStates>
                                     title: 'Today Deaths',
                                     value:
                                         snapshot.data!.todayDeaths.toString()),
-                                ReusableRow(
-                                    title: 'Today Recovered',
-                                    value: snapshot.data!.todayRecovered
-                                        .toString()),
+                                // ReusableRow(
+                                //     title: 'Today Recovered',
+                                //     value: snapshot.data!.todayRecovered
+                                //         .toString()),
                               ]),
                             ),
                           ),
